@@ -1,3 +1,1 @@
-## Código Criado na Disciplina de Pensamento Computacional"
-
-Feito pelo Marcão
+Cássio Borghetti Soder - 1139496 Andre Alves Neto 1139890
