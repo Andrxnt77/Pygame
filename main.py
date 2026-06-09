@@ -1,6 +1,7 @@
 import pygame
 import random
 from recursos.funcoes import inicializarBancoDeDados, limpar_tela, escreverDados, maior_pontuador
+from recursos.trabalho import calcular_nivel
 
 limpar_tela()
 inicializarBancoDeDados()
@@ -15,7 +16,7 @@ while True:
         print("Nome Inválido!")
         
 tamanho = (1000,700)
-pygame.display.set_caption("Iron Man de Pensamento Computacional")
+pygame.display.set_caption("Trabalho pensamento computacional")
 icone  = pygame.image.load("bases/icone.png")
 pygame.display.set_icon(icone)
 relogio = pygame.time.Clock()
@@ -109,7 +110,11 @@ def jogar():
         tela.blit( missel, (posicaoXMissel, posicaoYMissel) )
         texto = fonteMenu.render("Pontos: "+str(pontos), True, branco)
         tela.blit(texto, (700,15))
-            
+        
+        nivel = calcular_nivel(pontos)
+        textoNivel = fonteMenu.render("Nivel: "+nivel, True, branco)
+        tela.blit(textoNivel, (680, 35))  
+
         pixelsPersonaX = list(range(posicaoXPersona, posicaoXPersona+116))
         pixelsPersonaY = list(range(posicaoYPersona, posicaoYPersona+51))
         pixelsMisselX = list(range(posicaoXMissel, posicaoXMissel + 125))

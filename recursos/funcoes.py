@@ -2,8 +2,6 @@ import os, time
 import json
 from datetime import datetime
 
-
-
 def limpar_tela():
     os.system("cls")
     
