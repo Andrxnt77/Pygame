@@ -2,10 +2,22 @@ import pygame
 import random
 from recursos.funcoes import inicializarBancoDeDados, limpar_tela, escreverDados, maior_pontuador
 from recursos.trabalho import calcular_nivel
+import pyttsx3
+engine = pyttsx3.init()
 
 limpar_tela()
 inicializarBancoDeDados()
-nome_maior, maior_pontos, dataJogada = maior_pontuador()
+
+resultado = maior_pontuador()
+nome_maior = resultado[0]
+maior_pontos = resultado[1]
+dataJogada = resultado[2]
+horaJogada = resultado[3] if len(resultado) > 3 else "00:00:00"
+if nome_maior is None:
+    nome_maior = "Nenhum"
+    maior_pontos = 0
+    dataJogada = "--/--/----"
+    horaJogada = "--:--:--"
 pygame.init()
 
 while True:
@@ -38,17 +50,24 @@ pygame.mixer.music.load("bases/ironsound.mp3")
 fonteMenu = pygame.font.SysFont("comicsans",18)
 
 def jogar():
+    raioSol = 15
+    pulsando = 1    
+    decoX = random.randint(0, 700)
+    decoY = random.randint(0, 150)
+    decoVelX = random.choice([-2, -1, 1, 2])
+    decoVelY = random.choice([-2, -1, 1, 2])
     fundoMov1 = 0
     fundoMov2 = 1129
     posicaoXPersona = 0
     posicaoYPersona = 60
-    movimentoXPersona  = 0
-    movimentoYPersona  = 0
+    movimentoXPersona = 0   # ← confirme que existe
+    movimentoYPersona = 0
     velocidadeMovPersona = 5
     posicaoXMissel = 800
     posicaoYMissel = 100
     velocidadeMissel = 2
     pontos = 0
+    pausado = False
     pygame.mixer.Sound.play(missileSound)
     pygame.mixer.music.play(-1)
     dificuldade = 20
@@ -73,8 +92,25 @@ def jogar():
                 movimentoXPersona = 0
             elif evento.type == pygame.KEYUP and evento.key == pygame.K_LEFT:
                 movimentoXPersona = 0
-                
+            elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_SPACE:
+                pausado = not pausado
+            elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_ESCAPE:
+                quit()
         
+        if movimentoXPersona != 0:
+            posicaoXPersona = posicaoXPersona + movimentoXPersona
+            movimentoYPersona = 0
+        elif movimentoYPersona != 0:
+            posicaoYPersona = posicaoYPersona + movimentoYPersona
+            movimentoXPersona = 0
+        
+        if pausado:
+            textoBig = fonteMenu.render("PAUSE", True, branco)
+            tela.blit(textoBig, (475, 375))
+            pygame.display.update()
+            relogio.tick(60)
+            continue    
+    
         posicaoXPersona = posicaoXPersona + movimentoXPersona          
         posicaoYPersona = posicaoYPersona + movimentoYPersona            
         if posicaoXPersona < 0 :
@@ -128,14 +164,36 @@ def jogar():
                 print("Ainda Vivo, mas por pouco!")
         else:
             print("Ainda Vivo")
-        
-        
+                # move o objeto decorativo
+        decoX += decoVelX
+        decoY += decoVelY
+
+  
+        if decoX <= 0 or decoX >= 780:
+            decoVelX = -decoVelX
+        if decoY <= 0 or decoY >= 180:
+            decoVelY = -decoVelY
+
+        raioSol += 0.05 * pulsando
+        if raioSol >= 20:
+            pulsando = -1
+        elif raioSol <= 10:
+            pulsando = 1
+        pygame.draw.circle(tela, (255, 215, 0), (970, 20), int(raioSol))
+        pygame.draw.circle(tela, (255, 215, 0), (decoX, decoY), 5)
+
+        textoPause = fonteMenu.render("Press Space to Pause Game", True, branco)
+        tela.blit(textoPause, (425, 670))
         pygame.display.update()
         relogio.tick(60)
 
 def dead():
     pygame.mixer.music.stop()
     pygame.mixer.Sound.play(explosaoSound)
+    
+    engine.say(f"Game over! Melhor pontuador: {nome_maior} com {maior_pontos} pontos")
+    engine.runAndWait()
+
     larguraButtonStart = 150
     alturaButtonStart  = 40
     larguraButtonQuit = 150
@@ -202,7 +260,7 @@ def start():
         startButton = pygame.draw.rect(tela, branco, (10,10, larguraButtonStart, alturaButtonStart), border_radius=15)
         startTexto = fonteMenu.render("Iniciar Game", True, preto)
         tela.blit(startTexto, (25,12))
-        texto = fonteMenu.render(f"The Best: {nome_maior} - {maior_pontos} pts - {dataJogada}", True, preto)
+        texto = fonteMenu.render(f"The Best - {nome_maior} - {maior_pontos} - {dataJogada} - {horaJogada}", True, preto)
         textoMecanica = fonteMenu.render("Use as setas para desviar dos misseis!", True, preto)
         tela.blit(textoMecanica, (10, 60))
         tela.blit(texto, (10, 90))
